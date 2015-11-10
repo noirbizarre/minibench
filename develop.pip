@@ -1,0 +1,6 @@
+-e .[test]
+invoke
+coverage
+sphinx
+flake8
+tox

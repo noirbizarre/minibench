@@ -43,7 +43,7 @@ Quick start
 ===========
 
 Write your benchmarks as you would write you unittests.
-Just create ``.bench.py`` file.
+Just create a ``.bench.py`` file.
 
 .. code-block:: python
 
