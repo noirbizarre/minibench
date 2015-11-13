@@ -22,6 +22,14 @@ else:
 RunResult = namedtuple('RunResult', ('duration', 'success', 'result'))
 
 
+class Result(object):
+    ''' Store an aggregated result for a single method'''
+    def __init__(self):
+        self.total = 0
+        self.has_success = False
+        self.has_errors = False
+
+
 class Benchmark(object):
     '''Base class for all benchmark suites'''
     times = DEFAULT_TIMES
@@ -89,7 +97,11 @@ class Benchmark(object):
         self.before_each()
         tick = timer()
         success = True
-        result = func()
+        try:
+            result = func()
+        except:
+            success = False
+            result = None
         duration = timer() - tick
         self.after_each()
         return RunResult(duration, success, result)
@@ -110,12 +122,17 @@ class Benchmark(object):
 
         for test in tests:
             func = getattr(self, test)
-            results = self.results[test] = []
+            results = self.results[test] = Result()
             self._before(self, test)
             self.before()
             for i in range(self.times):
                 self._before_each(self, test, i)
-                results.append(self._run_one(func))
+                result = self._run_one(func)
+                results.total += result.duration
+                if result.success:
+                    results.has_success = True
+                else:
+                    results.has_errors = True
                 self._after_each(self, test, i)
             self.after()
             self._after(self, test)

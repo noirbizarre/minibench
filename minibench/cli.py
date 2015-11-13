@@ -61,17 +61,16 @@ class CliReporter(BaseReporter):
         click.echo('\r', nl=False)  # Clear the line
 
         results = bench.results[method]
-        total = sum(r.duration for r in results)
-        mean = total / len(results)
+        mean = results.total / bench.times
         ref = self.ref(bench, method)
-        duration = self.duration(total=total, mean=mean, ref=ref)
+        duration = self.duration(total=results.total, mean=mean, ref=ref)
 
-        if all(r.success for r in bench.results[method]):
-            status = ' '.join((green(OK), duration))
-        elif all(not r.success for r in bench.results[method]):
-            status = ' '.join((red(KO), duration))
-        else:
+        if results.has_success and results.has_errors:
             status = ' '.join((yellow(WARNING), duration))
+        elif results.has_success:
+            status = ' '.join((green(OK), duration))
+        else:
+            status = ' '.join((red(KO), duration))
 
         width, _ = click.get_terminal_size()
         size = width - len(click.unstyle(status))

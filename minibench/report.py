@@ -46,12 +46,11 @@ class BaseReporter(object):
             key = self.key(bench)
             runs = {}
             for method, results in bench.results.items():
-                total = sum(r.duration for r in results)
-                mean = total / len(results)
+                mean = results.total / bench.times
                 name = bench.label_for(method)
                 runs[method] = {
                     'name': name,
-                    'total': total,
+                    'total': results.total,
                     'mean': mean
                 }
             out[key] = {

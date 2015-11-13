@@ -235,19 +235,29 @@ class BenchmarkTest(unittest.TestCase):
     def test_results(self):
 
         class SleepBench(Benchmark):
-            counter = 0
 
             def bench_results(self):
                 time.sleep(0.1)
-                self.counter += 1
-                return self.counter
 
         bench = SleepBench(times=3)
         bench.run()
 
-        self.assertEquals(len(bench.results['bench_results']), 3)
+        result = bench.results['bench_results']
+        self.assertGreaterEqual(result.total, bench.times * 0.1)
+        self.assertTrue(result.has_success)
+        self.assertFalse(result.has_errors)
 
-        for i, result in enumerate(bench.results['bench_results']):
-            self.assertGreaterEqual(result.duration, 0.1)
-            self.assertTrue(result.success)
-            self.assertEqual(result.result, i + 1)
+    def test_failure(self):
+
+        class FailBench(Benchmark):
+
+            def bench_failure(self):
+                raise Exception()
+
+        bench = FailBench(times=3)
+        bench.run()
+
+        result = bench.results['bench_failure']
+        self.assertGreater(result.total, 0)
+        self.assertFalse(result.has_success)
+        self.assertTrue(result.has_errors)
