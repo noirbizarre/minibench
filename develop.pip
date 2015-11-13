@@ -2,5 +2,6 @@
 invoke
 coverage
 sphinx
+sphinx_rtd_theme
 flake8
 tox

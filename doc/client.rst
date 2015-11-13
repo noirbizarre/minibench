@@ -68,6 +68,6 @@ MiniBench provides an easy to compare results against a previous JSON report wit
 Bash completion
 ---------------
 
-A bash completion script is provided in the minibench github repository: `bench-completion.sh`_.
+A bash completion script is provided in the minibench github repository: `bench-complete.sh`_.
 
-.. _bench-completion.sh: https://raw.githubusercontent.com/noirbizarre/minibench/master/bash-completion.sh
+.. _bench-complete.sh: https://rawgit.com/noirbizarre/minibench/master/bench-complete.sh
