@@ -65,6 +65,21 @@ MiniBench provides an easy to compare results against a previous JSON report wit
     Re................... ✔ 1.48161s (+0.09043s) / 0.01482s (+0.00090s)
     ✔ Done
 
+Debug mode
+----------
+
+By default MiniBench does not stop on error nor display it.
+If you want to stop on first error and display it, you shoud run in debug mode
+with the ``-d`` or the ``--debug`` option.
+
+.. code-block:: console
+
+    $ bench -d
+    $ bench --debug
+
+In debug mode, it will not continue to execute a failing method
+and it will display the raised error.
+
 Bash completion
 ---------------
 

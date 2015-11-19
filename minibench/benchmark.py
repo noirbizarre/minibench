@@ -28,19 +28,21 @@ class Result(object):
         self.total = 0
         self.has_success = False
         self.has_errors = False
+        self.error = None
 
 
 class Benchmark(object):
     '''Base class for all benchmark suites'''
     times = DEFAULT_TIMES
 
-    def __init__(self, times=None, prefix="bench_",
+    def __init__(self, times=None, prefix="bench_", debug=False,
                  before=None, before_each=None,
                  after=None, after_each=None,
                  **kwargs):
 
         self.times = times or self.times
         self.results = {}
+        self.debug = debug
 
         self._prefix = prefix
 
@@ -99,9 +101,9 @@ class Benchmark(object):
         success = True
         try:
             result = func()
-        except:
+        except Exception as e:
             success = False
-            result = None
+            result = e
         duration = timer() - tick
         self.after_each()
         return RunResult(duration, success, result)
@@ -134,6 +136,9 @@ class Benchmark(object):
                 else:
                     results.has_errors = True
                 self._after_each(self, test, i)
+                if self.debug and not result.success:
+                    results.error = result.result
+                    break
             self.after()
             self._after(self, test)
 

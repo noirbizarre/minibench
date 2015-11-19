@@ -83,6 +83,18 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(len(runner.runned), 1)
         self.assertIsInstance(runner.runned[0], Benchmark)
 
+    def test_benchmark_in_debug(self):
+        filename = os.path.join(EXAMPLES, 'fail.bench.py')
+
+        runner = BenchmarkRunner(filename, debug=True)
+        runner.run()
+
+        self.assertEqual(len(runner.runned), 1)
+        self.assertIsInstance(runner.runned[0], Benchmark)
+
+        bench = runner.runned[0]
+        self.assertTrue(bench.debug)
+
     def test_hook_reporter(self):
         filename = os.path.join(EXAMPLES, 'empty.bench.py')
         reporter = CountReporter()

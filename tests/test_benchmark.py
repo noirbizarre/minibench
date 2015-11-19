@@ -261,3 +261,21 @@ class BenchmarkTest(unittest.TestCase):
         self.assertGreater(result.total, 0)
         self.assertFalse(result.has_success)
         self.assertTrue(result.has_errors)
+
+    def test_stop_on_failure_in_debug(self):
+        def before_each(bench, method, iteration):
+            assert iteration <= 1, 'Should stop on first error'
+
+        class FailBench(Benchmark):
+
+            def bench_failure(self):
+                raise ValueError('Failed')
+
+        bench = FailBench(times=3, debug=True, before_each=before_each)
+        bench.run()
+
+        result = bench.results['bench_failure']
+        self.assertGreater(result.total, 0)
+        self.assertFalse(result.has_success)
+        self.assertTrue(result.has_errors)
+        self.assertIsInstance(result.error, ValueError)

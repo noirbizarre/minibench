@@ -160,3 +160,8 @@ class ClientTest(unittest.TestCase):
             result = self.runner.invoke(cli, [filename, '--md', 'out.md'])
             self.assertEqual(result.exit_code, 0, result.exception)
             self.assertTrue(os.path.exists('out.md'), 'Should output report as Markdown')
+
+    def test_cli_with_debug(self):
+        filename = os.path.join(EXAMPLES, 'fail.bench.py')
+        result = self.runner.invoke(cli, ['-d', filename])
+        self.assertIn('I failed', result.output)

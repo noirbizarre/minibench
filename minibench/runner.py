@@ -21,10 +21,13 @@ class BenchmarkRunner(object):
         :type filenames: string
         :param reporters: the reporters classes or instance to run
         :type reporters: list
+        :param debug: Run in debug mode if ``True``
+        :type debug: bool
         '''
         self.benchmarks = []
         self.runned = []
         self.reporters = []
+        self.debug = kwargs.get('debug', False)
 
         for filename in filenames:
             module = self.load_module(filename)
@@ -51,6 +54,7 @@ class BenchmarkRunner(object):
             bench = bench(before=self.report_before_method,
                       after=self.report_after_method,
                       after_each=self.report_progress,
+                      debug=self.debug,
                       **kwargs)
             self.report_before_class(bench)
             bench.run()

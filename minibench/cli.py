@@ -32,8 +32,9 @@ WARNING = '⚠'
 
 class CliReporter(BaseReporter):
     '''A reporter that display running benchmarks with ANSI colors'''
-    def __init__(self, ref=None):
+    def __init__(self, ref=None, debug=False):
         self._ref = ref
+        self.debug = debug
 
     def start(self):
         nb_benchmarks = len(self.runner.benchmarks)
@@ -80,6 +81,10 @@ class CliReporter(BaseReporter):
         click.echo('{label:.<{size}} {status}'.format(label=cyan(label),
                                                       size=size,
                                                       status=status))
+        if self.debug and results.error:
+            exc = results.error
+            click.echo(yellow('Error: {0}'.format(type(exc))))
+            click.echo('\t{0}'.format(exc.message if hasattr(exc, 'message') else exc))
 
     def ref(self, bench, method):
         if self._ref:
@@ -129,12 +134,13 @@ def resolve_pattern(pattern):
 @click.option('--rst', type=click.Path(), help='Output results as reStructuredText')
 @click.option('--md', type=click.Path(), help='Output results as Markdown')
 @click.option('-r', '--ref', type=click.File('r'), help='A previous run result in JSON')
-def cli(patterns, times, json, csv, rst, md, ref):
+@click.option('-d', '--debug', is_flag=True, help='Run in debug (verbose, stop on error)')
+def cli(patterns, times, json, csv, rst, md, ref, debug):
     '''Execute minibench benchmarks'''
     if ref:
         ref = JSON.load(ref)
     filenames = []
-    reporters = [CliReporter(ref=ref) if ref else CliReporter]
+    reporters = [CliReporter(ref=ref, debug=debug)]
     kwargs = {}
     for pattern in patterns or ['**/*.bench.py']:
         filenames.extend(resolve_pattern(pattern))
@@ -148,5 +154,5 @@ def cli(patterns, times, json, csv, rst, md, ref):
         reporters.append(MarkdownReporter(md))
     if times:
         kwargs['times'] = times
-    runner = BenchmarkRunner(*filenames, reporters=reporters)
+    runner = BenchmarkRunner(*filenames, reporters=reporters, debug=debug)
     runner.run(**kwargs)
