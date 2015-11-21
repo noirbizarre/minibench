@@ -12,7 +12,7 @@ MiniBench
     :target: https://requires.io/github/noirbizarre/minibench/requirements/?branch=master
     :alt: Requirements Status
 .. image:: https://readthedocs.org/projects/minibench/badge/?version=latest
-    :target: http://minibench.readthedocs.org/en/latest/
+    :target: http://minibench.readthedocs.org/en/0.1.2/
     :alt: Documentation status
 
 MiniBench provides a simple framework for benchmarking following the ``unittest`` module pattern.
@@ -68,4 +68,4 @@ Then run it with the ``bench`` command
 Documentation
 =============
 
-The documentation is hosted `on Read the Docs <http://minibench.readthedocs.org/en/latest/>`_
+The documentation is hosted `on Read the Docs <http://minibench.readthedocs.org/en/0.1.2/>`_

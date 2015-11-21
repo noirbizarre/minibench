@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Current
--------
+0.1.2 (2015-11-21)
+------------------
 
 - Improve diff from reference and added ``-u/--unit`` option
 - Properly handle precision and added ``-p/--precision`` option
