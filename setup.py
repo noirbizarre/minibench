@@ -45,7 +45,7 @@ exec(compile(open('minibench/__about__.py').read(),
 
 tests_require = ['nose', 'rednose', 'markdown', 'docutils']
 install_requires = ['click', 'six']
-dev_requires = ['invoke', 'tox', 'flake8', 'sphinx', 'bumpr']
+dev_requires = ['invoke', 'tox', 'flake8', 'sphinx', 'sphinx_rtd_theme', 'bumpr']
 
 setup(
     name='minibench',
