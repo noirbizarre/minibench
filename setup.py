@@ -45,6 +45,7 @@ exec(compile(open('minibench/__about__.py').read(),
 
 tests_require = ['nose', 'rednose', 'markdown', 'docutils']
 install_requires = ['click', 'six']
+dev_requires = ['invoke', 'tox', 'flake8', 'sphinx']
 
 setup(
     name='minibench',
@@ -60,6 +61,7 @@ setup(
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
+        'dev': dev_requires,
     },
     entry_points={
         'console_scripts': [
