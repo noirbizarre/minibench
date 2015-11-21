@@ -165,3 +165,17 @@ class ClientTest(unittest.TestCase):
         filename = os.path.join(EXAMPLES, 'fail.bench.py')
         result = self.runner.invoke(cli, ['-d', filename])
         self.assertIn('I failed', result.output)
+
+    def test_cli_with_ref(self):
+        filename = os.path.join(EXAMPLES, 'empty.bench.py')
+        with self.runner.isolated_filesystem():
+            self.runner.invoke(cli, [filename, '--json', 'ref.json'])
+            result = self.runner.invoke(cli, [filename, '--ref', 'ref.json'])
+            self.assertEqual(result.exit_code, 0, result.exception)
+
+    def test_cli_with_ref_unit_seconds(self):
+        filename = os.path.join(EXAMPLES, 'empty.bench.py')
+        with self.runner.isolated_filesystem():
+            self.runner.invoke(cli, [filename, '--json', 'ref.json'])
+            result = self.runner.invoke(cli, [filename, '--ref', 'ref.json', '-u', 'seconds'])
+            self.assertEqual(result.exit_code, 0, result.exception)

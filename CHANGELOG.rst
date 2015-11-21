@@ -4,7 +4,7 @@ Changelog
 Current
 -------
 
-- Nothing yet
+- Improve diff from reference and added ``-u/--unit`` option
 
 
 0.1.1

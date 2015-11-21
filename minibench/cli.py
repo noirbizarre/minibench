@@ -29,12 +29,20 @@ OK = '✔'
 KO = '✘'
 WARNING = '⚠'
 
+UNIT_PERCENTS = ('%', 'percents')
+UNIT_SECONDS = ('s', 'seconds')
+DEFAULT_UNIT = '%'
+
+FORMAT_DURATION = '{total:.5f}s / {mean:.5f}s'
+FORMAT_DIFF = '{total:.5f}s / {mean:.5f}s ({diff})'
+
 
 class CliReporter(BaseReporter):
     '''A reporter that display running benchmarks with ANSI colors'''
-    def __init__(self, ref=None, debug=False):
+    def __init__(self, ref=None, debug=False, unit=DEFAULT_UNIT):
         self._ref = ref
         self.debug = debug
+        self.is_percent = unit in UNIT_PERCENTS
 
     def start(self):
         nb_benchmarks = len(self.runner.benchmarks)
@@ -93,24 +101,32 @@ class CliReporter(BaseReporter):
 
     def duration(self, total, mean, ref=None):
         if ref:
-            total_diff = self.diff(total, ref['total'])
-            mean_diff = self.diff(mean, ref['mean'])
-            duration = '{total:.5f}s ({total_diff}) / {mean:.5f}s ({mean_diff})'.format(total=total,
-                                                                                        mean=mean,
-                                                                                        total_diff=total_diff,
-                                                                                        mean_diff=mean_diff)
+            diff = self.diff(total, mean, ref)
+            duration = FORMAT_DIFF.format(total=total,
+                                          mean=mean,
+                                          diff=diff)
         else:
-            duration = '{total:.5f}s / {mean:.5f}s'.format(total=total, mean=mean)
+            duration = FORMAT_DURATION.format(total=total, mean=mean)
         return duration
 
-    def diff(self, value, ref):
-        diff = value - ref
+    def diff(self, total, mean, ref):
+        diff = total - ref['total']
         if diff > 0:
-            return red('+{0:.5f}s'.format(diff))
+            if self.is_percent:
+                msg = '+{0:.2%}'.format(diff / ref['total'])
+            else:
+                mean_diff = mean - ref['mean']
+                msg = '+{0:.5f}s / +{1:.5f}s'.format(diff, mean_diff)
+            return red(msg)
         elif diff < 0:
-            return green('{0:.5f}s'.format(diff))
+            if self.is_percent:
+                msg = '{0:.2%}'.format(diff / ref['total'])
+            else:
+                mean_diff = mean - ref['mean']
+                msg = '{0:.5f}s / {1:.5f}s'.format(diff, mean_diff)
+            return green(msg)
         else:
-            return '-'
+            return cyan('---')
 
     def progress(self, bench, method, times):
         self.bar.update(times)
@@ -134,13 +150,17 @@ def resolve_pattern(pattern):
 @click.option('--rst', type=click.Path(), help='Output results as reStructuredText')
 @click.option('--md', type=click.Path(), help='Output results as Markdown')
 @click.option('-r', '--ref', type=click.File('r'), help='A previous run result in JSON')
+@click.option('-u', '--unit', default=DEFAULT_UNIT,
+              type=click.Choice(UNIT_PERCENTS + UNIT_SECONDS),
+              help='Unit to display difference from reference')
 @click.option('-d', '--debug', is_flag=True, help='Run in debug (verbose, stop on error)')
-def cli(patterns, times, json, csv, rst, md, ref, debug):
+def cli(patterns, times, json, csv, rst, md, ref, unit, debug):
     '''Execute minibench benchmarks'''
     if ref:
         ref = JSON.load(ref)
+
     filenames = []
-    reporters = [CliReporter(ref=ref, debug=debug)]
+    reporters = [CliReporter(ref=ref, debug=debug, unit=unit)]
     kwargs = {}
     for pattern in patterns or ['**/*.bench.py']:
         filenames.extend(resolve_pattern(pattern))
