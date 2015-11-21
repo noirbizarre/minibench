@@ -110,25 +110,29 @@ class CliReporter(BaseReporter):
         return duration
 
     def diff(self, total, mean, ref):
-        diff = total - ref['total']
+        diff = self._r(total) - self._r(ref['total'])
         if diff > 0:
             if self.is_percent:
-                msg = '+{0:.2%}'.format(diff / ref['total'])
+                msg = '+{0:.2%}'.format(diff / self._r(ref['total']))
             else:
-                mean_diff = mean - ref['mean']
+                mean_diff = self._r(mean) - self._r(ref['mean'])
                 msg = '+{total:.{precision}f}s / +{mean:.{precision}f}s'
                 msg = msg.format(total=diff, mean=mean_diff, precision=self.precision)
             return red(msg)
         elif diff < 0:
             if self.is_percent:
-                msg = '{0:.2%}'.format(diff / ref['total'])
+                msg = '{0:.2%}'.format(diff / self._r(ref['total']))
             else:
-                mean_diff = mean - ref['mean']
+                mean_diff = self._r(mean) - self._r(ref['mean'])
                 msg = '{total:.{precision}f}s / {mean:.{precision}f}s'
                 msg = msg.format(total=diff, mean=mean_diff, precision=self.precision)
             return green(msg)
         else:
             return cyan('---')
+
+    def _r(self, value):
+        '''Round a value according defined precision'''
+        return round(value, self.precision)
 
     def progress(self, bench, method, times):
         self.bar.update(times)

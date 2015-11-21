@@ -5,6 +5,7 @@ Current
 -------
 
 - Improve diff from reference and added ``-u/--unit`` option
+- Properly handle precision and added ``-p/--precision`` option
 
 
 0.1.1
