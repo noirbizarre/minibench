@@ -5,7 +5,7 @@ import os
 import click
 
 from ._compat import recursive_glob
-from .report import BaseReporter, JsonReporter, CsvReporter, MarkdownReporter, RstReporter
+from .report import BaseReporter, JsonReporter, CsvReporter, MarkdownReporter, RstReporter, DEFAULT_PRECISION
 from .runner import BenchmarkRunner
 
 
@@ -33,16 +33,17 @@ UNIT_PERCENTS = ('%', 'percents')
 UNIT_SECONDS = ('s', 'seconds')
 DEFAULT_UNIT = '%'
 
-FORMAT_DURATION = '{total:.5f}s / {mean:.5f}s'
-FORMAT_DIFF = '{total:.5f}s / {mean:.5f}s ({diff})'
+FORMAT_DURATION = '{total:.{precision}f}s / {mean:.{precision}f}s'
+FORMAT_DIFF = '{total:.{precision}f}s / {mean:.{precision}f}s ({diff})'
 
 
 class CliReporter(BaseReporter):
     '''A reporter that display running benchmarks with ANSI colors'''
-    def __init__(self, ref=None, debug=False, unit=DEFAULT_UNIT):
+    def __init__(self, ref=None, debug=False, unit=DEFAULT_UNIT, **kwargs):
         self._ref = ref
         self.debug = debug
         self.is_percent = unit in UNIT_PERCENTS
+        super(CliReporter, self).__init__(**kwargs)
 
     def start(self):
         nb_benchmarks = len(self.runner.benchmarks)
@@ -102,11 +103,10 @@ class CliReporter(BaseReporter):
     def duration(self, total, mean, ref=None):
         if ref:
             diff = self.diff(total, mean, ref)
-            duration = FORMAT_DIFF.format(total=total,
-                                          mean=mean,
-                                          diff=diff)
+            duration = FORMAT_DIFF.format(total=total, mean=mean,
+                                          diff=diff, precision=self.precision)
         else:
-            duration = FORMAT_DURATION.format(total=total, mean=mean)
+            duration = FORMAT_DURATION.format(total=total, mean=mean, precision=self.precision)
         return duration
 
     def diff(self, total, mean, ref):
@@ -116,14 +116,16 @@ class CliReporter(BaseReporter):
                 msg = '+{0:.2%}'.format(diff / ref['total'])
             else:
                 mean_diff = mean - ref['mean']
-                msg = '+{0:.5f}s / +{1:.5f}s'.format(diff, mean_diff)
+                msg = '+{total:.{precision}f}s / +{mean:.{precision}f}s'
+                msg = msg.format(total=diff, mean=mean_diff, precision=self.precision)
             return red(msg)
         elif diff < 0:
             if self.is_percent:
                 msg = '{0:.2%}'.format(diff / ref['total'])
             else:
                 mean_diff = mean - ref['mean']
-                msg = '{0:.5f}s / {1:.5f}s'.format(diff, mean_diff)
+                msg = '{total:.{precision}f}s / {mean:.{precision}f}s'
+                msg = msg.format(total=diff, mean=mean_diff, precision=self.precision)
             return green(msg)
         else:
             return cyan('---')
@@ -153,25 +155,27 @@ def resolve_pattern(pattern):
 @click.option('-u', '--unit', default=DEFAULT_UNIT,
               type=click.Choice(UNIT_PERCENTS + UNIT_SECONDS),
               help='Unit to display difference from reference')
+@click.option('-p', '--precision', type=click.INT, default=DEFAULT_PRECISION,
+              help='Precision used (number of digits)')
 @click.option('-d', '--debug', is_flag=True, help='Run in debug (verbose, stop on error)')
-def cli(patterns, times, json, csv, rst, md, ref, unit, debug):
+def cli(patterns, times, json, csv, rst, md, ref, unit, precision, debug):
     '''Execute minibench benchmarks'''
     if ref:
         ref = JSON.load(ref)
 
     filenames = []
-    reporters = [CliReporter(ref=ref, debug=debug, unit=unit)]
+    reporters = [CliReporter(ref=ref, debug=debug, unit=unit, precision=precision)]
     kwargs = {}
     for pattern in patterns or ['**/*.bench.py']:
         filenames.extend(resolve_pattern(pattern))
     if json:
-        reporters.append(JsonReporter(json))
+        reporters.append(JsonReporter(json, precision=precision))
     if csv:
-        reporters.append(CsvReporter(csv))
+        reporters.append(CsvReporter(csv, precision=precision))
     if rst:
-        reporters.append(RstReporter(rst))
+        reporters.append(RstReporter(rst, precision=precision))
     if md:
-        reporters.append(MarkdownReporter(md))
+        reporters.append(MarkdownReporter(md, precision=precision))
     if times:
         kwargs['times'] = times
     runner = BenchmarkRunner(*filenames, reporters=reporters, debug=debug)

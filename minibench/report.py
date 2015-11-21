@@ -5,9 +5,14 @@ import csv
 import json
 import os
 
+DEFAULT_PRECISION = 5
+
 
 class BaseReporter(object):
     '''Base class for all reporters'''
+    def __init__(self, precision=DEFAULT_PRECISION, **kwargs):
+        self.precision = precision
+
     def init(self, runner):
         self.runner = runner
 
@@ -67,12 +72,13 @@ class BaseReporter(object):
 
 class FileReporter(BaseReporter):
     '''A reporter dumping results into a file'''
-    def __init__(self, filename):
+    def __init__(self, filename, **kwargs):
         '''
         :param filename: the output file name
         :type filename: string
         '''
         self.filename = filename
+        super(FileReporter, self).__init__(**kwargs)
 
     def end(self):
         '''
@@ -142,7 +148,6 @@ class CsvReporter(FileReporter):
 class FixedWidth(object):
     '''A mixins with helpers for fixed width tables raporters'''
     headers = ('Method', 'Times', 'Total (s)', 'Average (s)')
-    precision = 5
 
     def with_sizes(self, *headers):
         '''Compute the report summary and add the computed column sizes'''
