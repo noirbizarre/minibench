@@ -47,6 +47,7 @@ Contents:
    reporters
    api
    changelog
+   contributing
 
 
 
